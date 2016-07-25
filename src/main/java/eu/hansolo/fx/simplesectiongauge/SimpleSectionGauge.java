@@ -23,7 +23,9 @@ import eu.hansolo.medusa.GaugeBuilder;
 import eu.hansolo.medusa.Section;
 import eu.hansolo.medusa.tools.Helper;
 import javafx.beans.DefaultProperty;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
@@ -48,6 +50,7 @@ import javafx.scene.shape.ArcType;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.text.Text;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -80,33 +83,42 @@ public class SimpleSectionGauge extends Region {
     private Gauge           model;
     private List<Section>   sections;
     private boolean         sectionsVisible;
-    private double          center;
-    private double          barWidth;
     private String          formatString;
 
 
     // ******************** Constructors **************************************
     public SimpleSectionGauge() {
+        this("", "",
+             0, 100,
+             Color.rgb(69, 106, 207), Color.rgb(150, 150, 150, 0.25),
+             true, null);
+    }
+    public SimpleSectionGauge(final String TITLE, final String UNIT,
+                              final double MIN_VALUE, final double MAX_VALUE,
+                              final Color BAR_COLOR, final Color BAR_BACKGROUND_COLOR,
+                              final boolean SECTIONS_VISIBLE, final Section... SECTIONS) {
         backgroundPaint = Color.TRANSPARENT;
         borderPaint     = Color.TRANSPARENT;
         borderWidth     = 0d;
         model           = GaugeBuilder.create()
-                                      .title("Title")
-                                      .unit("unit")
-                                      .barBackgroundColor(Color.rgb(150, 150, 150, 0.25))
-                                      .barColor(Color.rgb(69, 106, 207))
+                                      .minValue(MIN_VALUE)
+                                      .maxValue(MAX_VALUE)
+                                      .title(TITLE)
+                                      .unit(UNIT)
+                                      .barBackgroundColor(BAR_BACKGROUND_COLOR)
+                                      .barColor(BAR_COLOR)
                                       .animated(true)
                                       .startAngle(150)
                                       .angleRange(300)
-                                      .sections(new Section(0, 33, Color.rgb(69, 207, 109)),
-                                                new Section(33, 66, Color.rgb(239, 215, 80)),
-                                                new Section(66, 100, Color.rgb(239, 96, 80)))
-                                      .sectionsVisible(true)
+                                      .sectionsVisible(SECTIONS_VISIBLE)
                                       .build();
-        sections        = model.getSections();
+        if (null != SECTIONS) {
+            model.setSections(SECTIONS);
+            sections = model.getSections();
+        } else {
+            sections = new ArrayList<>();
+        }
         sectionsVisible = model.getSectionsVisible();
-        center          = PREFERRED_WIDTH * 0.5;
-        barWidth        = PREFERRED_WIDTH * 0.125;
         formatString    = new StringBuilder("%.").append(Integer.toString(model.getDecimals())).append("f").toString();
         init();
         initGraphics();
@@ -228,6 +240,18 @@ public class SimpleSectionGauge extends Region {
     public void removeSection(final Section SECTION) { model.removeSection(SECTION); }
     public void clearSections() { model.clearSections(); }
 
+    public boolean getSectionsVisible() { return model.getSectionsVisible(); }
+    public void setSectionsVisible(final boolean VISIBLE) { model.setSectionsVisible(VISIBLE); }
+    public BooleanProperty sectionsVisibleProperty() { return model.sectionsVisibleProperty(); }
+
+    public Color getBarColor() { return model.getBarColor(); }
+    public void setBarColor(final Color COLOR) { model.setBarColor(COLOR); }
+    public ObjectProperty<Color> barColorProperty() { return model.barColorProperty(); }
+
+    public Color getBarBackgroundColor() { return model.getBarBackgroundColor(); }
+    public void setBarBackgroundColor(final Color COLOR) { model.setBarBackgroundColor(COLOR); }
+    public ObjectProperty<Color> barBackgroundColorProperty() { return model.barBackgroundColorProperty(); }
+
     @Override public ObservableList<Node> getChildren() { return super.getChildren(); }
 
 
@@ -325,9 +349,6 @@ public class SimpleSectionGauge extends Region {
             pane.setMaxSize(size, size);
             pane.setPrefSize(size, size);
             pane.relocate((getWidth() - size) * 0.5, (getHeight() - size) * 0.5);
-
-            center   = size * 0.5;
-            barWidth = size * 0.125;
 
             sectionCanvas.setWidth(size);
             sectionCanvas.setHeight(size);

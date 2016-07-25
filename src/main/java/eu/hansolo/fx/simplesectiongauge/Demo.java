@@ -16,9 +16,11 @@
 
 package eu.hansolo.fx.simplesectiongauge;
 
+import eu.hansolo.medusa.Section;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.layout.StackPane;
 import javafx.scene.Scene;
@@ -38,7 +40,11 @@ public class Demo extends Application {
     private AnimationTimer     timer;
 
     @Override public void init() {
-        gauge = new SimpleSectionGauge();
+        gauge = new SimpleSectionGauge("Title", "unit",
+                                       0, 100,
+                                       Color.rgb(69, 106, 207), Color.rgb(150, 150, 150, 0.25),
+                                       true,
+                                       new Section(0, 33, Color.rgb(69, 207, 109)), new Section(33, 66, Color.rgb(239, 215, 80)), new Section(66, 100, Color.rgb(239, 96, 80)));
         lastTimerCall = System.nanoTime();
         timer = new AnimationTimer() {
             @Override public void handle(long now) {
